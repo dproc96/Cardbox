@@ -25,6 +25,10 @@ const NoteSchema = new Schema({
     }]
 })
 
+NoteSchema.methods.alterHtml = function(value) {
+    this.html = value;
+}
+
 const Note = mongoose.model("Note", NoteSchema);
 
 module.exports = Note;
