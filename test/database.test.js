@@ -52,6 +52,102 @@ describe("Database", () => {
                 assert.strictEqual(note.html, "new text");
             })
         })
+        describe("#attachToUser", () => {
+            it("attaches a User document to the Note document", async () => {
+                const user = new User({
+                    email: "test@test.com",
+                    password: "test",
+                    username: "test"
+                })
+                await user.save()
+                const note = new Note({
+                    title: "test",
+                    html: "test"
+                });
+                await note.save()
+                await note.attachToUser(user._id);
+                assert.include(note, { author: user._id })
+            })
+            it("attaches a Note document to the User document", async () => {
+                const user = new User({
+                    email: "test@test.com",
+                    password: "test",
+                    username: "test"
+                })
+                await user.save()
+                const note = new Note({
+                    title: "test",
+                    html: "test"
+                });
+                await note.save()
+                await note.attachToUser(user._id);
+                const dbUser = await User.findOne({ _id: user._id })
+                assert.include(dbUser.notes, note._id);
+            })
+            it("attaches a Note document to the User document automatically if Note is saved with an author", async () => {
+                const user = new User({
+                    email: "test@test.com",
+                    password: "test",
+                    username: "test"
+                })
+                await user.save()
+                const note = new Note({
+                    title: "test",
+                    html: "test",
+                    author: user._id
+                });
+                await note.save()
+                const dbUser = await User.findOne({ _id: user._id })
+                assert.include(dbUser.notes, note._id);
+            })
+            it("throws an error if the user doesn't exist", async () => {
+                const user = new User({
+                    email: "test@test.com",
+                    password: "test",
+                    username: "test"
+                })
+                const note = new Note({
+                    title: "test",
+                    html: "test"
+                });
+                await note.save()
+                try {
+                    await note.attachToUser(user._id);
+                }
+                catch (error) {
+                    assert.strictEqual(error.message, "User not found")
+                }
+            })
+        })
+        describe("#attachCategory", () => {
+            it("attaches a Category document to the Note document", async () => {
+                const note = new Note({
+                    title: "test",
+                    html: "test"
+                });
+                await note.save();
+                const category = new Category({
+                    name: "test"
+                });
+                await category.save();
+                await note.attachCategory(category._id);
+                assert.include(note.categories, category._id);
+            })
+            it("attaches the Note document to the Category document", async () => {
+                const note = new Note({
+                    title: "test",
+                    html: "test"
+                });
+                await note.save();
+                const category = new Category({
+                    name: "test"
+                });
+                await category.save();
+                await note.attachCategory(category._id);
+                const dbCategory = await Category.findOne({ _id: category._id });
+                assert.include(dbCategory.notes, note._id)
+            })
+        })
     })
     describe("User", () => {
         describe("#email", () => {
@@ -208,6 +304,16 @@ describe("Database", () => {
                 catch (error) {
                     assert.strictEqual(error.message, "Password does not match")
                 }
+            })
+        })
+    })
+    describe("Category", () => {
+        describe("#name", () => {
+            it("is a string", () => {
+                const category = new Category({
+                    name: "test"
+                });
+                assert.strictEqual(category.name, "test")
             })
         })
     })
