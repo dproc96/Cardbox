@@ -13,7 +13,7 @@ class Card extends React.Component {
             dragging: false
         }
     }
-    _onMouseMove(e) {
+    handleMouseMove(e) {
         if (this.state.dragging) {
             console.log(this.state.offsetY)
             console.log(e.pageY)
@@ -45,7 +45,7 @@ class Card extends React.Component {
             resize: "both"
         }
         return (
-            <div onMouseDown={this.handleMouseDown.bind(this)} onMouseUp={this.handleMouseUp.bind(this)} onMouseMove={this._onMouseMove.bind(this)} style={style}>
+            <div onMouseDown={this.handleMouseDown.bind(this)} onMouseUp={this.handleMouseUp.bind(this)} onMouseMove={this.handleMouseMove.bind(this)} style={style}>
                 <h3>{this.state.title}</h3>
                 <div>
                     {this.state.html}
