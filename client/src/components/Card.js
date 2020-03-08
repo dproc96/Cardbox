@@ -15,11 +15,17 @@ class Card extends React.Component {
     }
     _onMouseMove(e) {
         if (this.state.dragging) {
-            this.setState({ x: e.pageX/1.5, y: e.pageY/1.5 });
+            console.log(this.state.offsetY)
+            console.log(e.pageY)
+            this.setState({ x: e.pageX - this.state.offsetX, y: e.pageY - this.state.offsetY });
         }
     }
-    handleMouseDown() {
-        this.setState({ dragging: true })
+    handleMouseDown(e) {
+        this.setState({ 
+            offsetX: e.pageX - this.state.x,
+            offsetY: e.pageY - this.state.y,
+            dragging: true 
+        })
     }
     handleMouseUp() {
         this.setState({ dragging: false })
