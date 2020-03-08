@@ -55,7 +55,7 @@ NoteSchema.methods.attachCategory = async function(categoryId) {
     }
 }
 
-NoteSchema.methods.removeCategory = async function (categoryId) {
+NoteSchema.methods.removeCategory = async function(categoryId) {
     const category = await Category.findOne({ _id: categoryId });
     const indexInNote = this.categories.indexOf(categoryId);
     const indexInCategory = category.indexOf(this._id)
@@ -72,6 +72,7 @@ NoteSchema.methods.removeCategory = async function (categoryId) {
         throw new Error("Category not found")
     }
 }
+
 
 NoteSchema.pre("save", async function(next) {
     if (this.isModified("author")) {
