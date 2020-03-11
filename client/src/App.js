@@ -10,6 +10,7 @@ class App extends React.Component {
             mouseX: 0,
             mouseY: 0,
             doNotHighlight: false,
+            editing: 0,
             cards: [
                 {
                     title: "Title",
@@ -128,6 +129,13 @@ class App extends React.Component {
         cards[i].resizeHover = false;
     }
     cardHandleMouseDown(i) {
+        let editing;
+        if (this.state.editing !== i) {
+            editing = null
+        }
+        else {
+            editing = i
+        }
         const cards = this.state.cards
         const card = cards[i]
         if (!card.resizeHover) {
@@ -137,17 +145,39 @@ class App extends React.Component {
             card.resizing = true
         }
         cards.push(cards.splice(i, 1)[0])
-        this.setState({ cards: cards })
+        this.setState({ cards: cards, editing: editing })
+    }
+    editHandleClick(i) {
+        console.log("click")
+        this.setState({ editing: i })
+    }
+    confirmHandleClick() {
+        this.setState({ editing: null })
     }
     render() {
         const style = {
             backgroundImage: "url(/assets/images/wood.jpg)",
             minHeight: "100vh"
         }
+        const getCardProps = (i) => {
+            let editing = this.state.editing === i;
+            return {
+                handleEditConfirm: editing? this.confirmHandleClick.bind(this) : () => { this.editHandleClick.bind(this)(i) },
+                editing: editing, 
+                doNotHighlight: this.state.doNotHighlight, 
+                handleMouseDown: () => { this.cardHandleMouseDown(i) }, 
+                handleMouseMove: (e) => { this.checkResizing(e, i) }, 
+                handleMouseEnter: (e) => { this.checkResizing(e, i) }, 
+                id: i,
+                key: i,
+                mouseX: this.state.mouseX, 
+                mouseY: this.state.mouseY
+            }
+        }
         return (
             <div onMouseDown={this.handleMouseDown.bind(this)} onMouseUp={this.handleMouseUp.bind(this)} onMouseMove={this.handleMouseMove.bind(this)} style={style}>
                 {this.state.cards.map((card, i) => {
-                    return <Card doNotHighlight={this.state.doNotHighlight} handleMouseDown={() => { this.cardHandleMouseDown(i) }} handleMouseMove={(e) => { this.checkResizing(e, i) }} handleMouseEnter={(e) => { this.checkResizing(e, i) }} id={i} key={i} {...card} mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
+                    return <Card {...getCardProps(i)} {...card} />
                 })}
             </div>
         )

@@ -1,6 +1,5 @@
 import React from "react";
-
-// const resizeOffset = 5;
+import EditCardButton from "./EditCardButton";
 
 class Card extends React.Component {
     constructor(props) {
@@ -28,11 +27,13 @@ class Card extends React.Component {
             boxShadow: "2px 2px 3px 3px rgba(0,0,0,0.3)",
             userSelect: !(!this.props.doNotHighlight || this.state.textSelect) ? "none" : "auto",
             resize: "both",
-            cursor: this.props.resizeHover ? `${this.props.resizeHover}-resize` : "auto"
+            cursor: this.props.resizeHover ? `${this.props.resizeHover}-resize` : "auto",
+            zIndex: this.props.id * 2
         }
         return (
             <div onMouseMove={this.props.handleMouseMove} onMouseEnter={this.props.handleMouseEnter} onMouseDown={this.props.handleMouseDown} style={style}>
                 <div style={{overflow: "scroll", height: "100%"}}>
+                    <EditCardButton z={this.props.id * 2 + 1} handleClick={this.props.handleEditConfirm} editing={this.props.editing} />
                     <h3 onMouseDown={this.handleTextMouseDown.bind(this)} onMouseUp={this.handleTextMouseUp.bind(this)}>{this.props.title}</h3>
                     <div onMouseDown={this.handleTextMouseDown.bind(this)} onMouseUp={this.handleTextMouseUp.bind(this)}>
                         {this.props.html}

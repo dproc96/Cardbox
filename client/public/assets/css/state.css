@@ -1,0 +1,8 @@
+*:focus {
+    outline: none;
+}
+
+.btn:hover {
+    color: #222222;
+    cursor: pointer;
+}
