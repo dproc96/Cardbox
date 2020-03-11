@@ -9,6 +9,7 @@ class App extends React.Component {
         this.state = {
             mouseX: 0,
             mouseY: 0,
+            doNotHighlight: false,
             cards: [
                 {
                     title: "Title",
@@ -23,8 +24,22 @@ class App extends React.Component {
                     xStatic: 30,
                     dragging: false,
                     resizing: false,
-                    resizeHover: false,
-                    hover: false
+                    resizeHover: false
+                },
+                {
+                    title: "Title 2",
+                    html: "This is a second notecard",
+                    width: 500,
+                    height: 300,
+                    widthStatic: 500,
+                    heightStatic: 300,
+                    y: 200,
+                    x: 700,
+                    yStatic: 200,
+                    xStatic: 700,
+                    dragging: false,
+                    resizing: false,
+                    resizeHover: false
                 }
             ]
         }
@@ -38,58 +53,59 @@ class App extends React.Component {
         const resizingNesw = (card.width - distanceX <= resizeOffset && distanceY <= resizeOffset) || (distanceX <= resizeOffset && card.height - distanceY <= resizeOffset)
         if (resizingNwse) {
             card.resizeHover = "nwse"
-            card.hover = false
         }
         else if (resizingNesw) {
             card.resizeHover = "nesw"
-            card.hover = false
         }
         else {
             card.resizeHover = false 
-            card.hover = true
         }
     }
     handleMouseDown(e) {
-        const cards = this.state.cards
-        if (cards.filter(x => { return x.resizeHover }).length === 1) {
-            cards.filter(x => { return x.resizeHover })[0].resizing = true
-        }
-        if (cards.filter(x => { return x.hover }).length === 1) {
-            cards.filter(x => { return x.hover })[0].dragging = true
-        }
         this.setState({
             xStart: e.pageX,
             yStart: e.pageY,
-            cards: cards
+            doNotHighlight: true
         })
     }
     handleMouseUp() {
         const cards = this.state.cards;
-        cards.filter(x => { return x.resizing || x.dragging }).forEach(card => {
+        cards.forEach(card => {
             card.resizing = false
             card.dragging = false
+            card.resizeHover = false
             card.heightStatic = card.height
             card.widthStatic = card.width
             card.yStatic = card.y
             card.xStatic = card.x
         })
+        this.setState({
+            cards: cards,
+            doNotHighlight: false
+        })
     }
     resize(card) {
-        const left = this.state.xStart <= card.xStatic + resizeOffset;
-        const top = this.state.yStart <= card.yStatic + resizeOffset;
-        if (top) {
-            card.height = card.heightStatic + this.state.yStart - this.state.mouseY
-            card.y = card.yStatic + this.state.mouseY - this.state.yStart
-        }
-        else {
-            card.height = card.heightStatic + this.state.mouseY - this.state.yStart
-        }
-        if (left) {
-            card.width = card.widthStatic + this.state.xStart - this.state.mouseX
-            card.x = card.xStatic + this.state.mouseX - this.state.xStart
-        }
-        else {
-            card.width = card.widthStatic + this.state.mouseX - this.state.xStart
+        if (card.resizing) {
+            const left = this.state.xStart <= card.xStatic + resizeOffset;
+            const top = this.state.yStart <= card.yStatic + resizeOffset;
+            if (top) {
+                card.height = Math.max(card.heightStatic + this.state.yStart - this.state.mouseY, 50)
+                if (card.height !== 50) {
+                    card.y = card.yStatic + this.state.mouseY - this.state.yStart
+                }
+            }
+            else {
+                card.height = Math.max(card.heightStatic + this.state.mouseY - this.state.yStart, 50)
+            }
+            if (left) {
+                card.width = Math.max(card.widthStatic + this.state.xStart - this.state.mouseX, 50)
+                if (card.width !== 50) {
+                    card.x = card.xStatic + this.state.mouseX - this.state.xStart
+                }
+            }
+            else {
+                card.width = Math.max(card.widthStatic + this.state.mouseX - this.state.xStart, 50)
+            }
         }
     }
     drag(card) {
@@ -109,8 +125,19 @@ class App extends React.Component {
     }
     cardHandleMouseLeave(i) {
         const cards = this.state.cards
-        cards[i].hover = false;
         cards[i].resizeHover = false;
+    }
+    cardHandleMouseDown(i) {
+        const cards = this.state.cards
+        const card = cards[i]
+        if (!card.resizeHover) {
+            card.dragging = true
+        }
+        else {
+            card.resizing = true
+        }
+        cards.push(cards.splice(i, 1)[0])
+        this.setState({ cards: cards })
     }
     render() {
         const style = {
@@ -120,7 +147,7 @@ class App extends React.Component {
         return (
             <div onMouseDown={this.handleMouseDown.bind(this)} onMouseUp={this.handleMouseUp.bind(this)} onMouseMove={this.handleMouseMove.bind(this)} style={style}>
                 {this.state.cards.map((card, i) => {
-                    return <Card handleMouseLeave={() => { this.cardHandleMouseLeave(i) }} handleMouseMove={(e) => { this.checkResizing(e, i) }} handleMouseEnter={(e) => { this.checkResizing(e, i) }} id={i} key={i} {...card} mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
+                    return <Card doNotHighlight={this.state.doNotHighlight} handleMouseDown={() => { this.cardHandleMouseDown(i) }} handleMouseMove={(e) => { this.checkResizing(e, i) }} handleMouseEnter={(e) => { this.checkResizing(e, i) }} id={i} key={i} {...card} mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
                 })}
             </div>
         )
